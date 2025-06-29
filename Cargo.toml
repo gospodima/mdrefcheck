@@ -1,0 +1,20 @@
+[package]
+name = "mdrefcheck"
+version = "0.1.0"
+edition = "2024"
+readme = "README.md"
+description = "A CLI tool to validate references in markdown files."
+authors = ["gospodima <dimasc28@gmail.com>"]
+license = "MIT"
+repository = "https://gitlab.com/gospodima/mdrefcheck"
+homepage = "https://gitlab.com/gospodima/mdrefcheck"
+keywords = ["markdown", "cli", "reference", "link-checker", "docs"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+clap = { version = "4.5.40", features = ["derive"] }
+colored = "3.0.0"
+pathdiff = "0.2.3"
+pulldown-cmark = "0.13.0"
+regex = "1.11.1"
+walkdir = "2.5.0"
