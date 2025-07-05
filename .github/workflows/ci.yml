@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - master
+      - ci-setup
     tags:
       - '*'
   pull_request:
