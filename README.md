@@ -21,4 +21,3 @@ From PyPI:
 ```bash
 pip install mdrefcheck
 ```
-
