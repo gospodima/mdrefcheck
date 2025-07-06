@@ -1,0 +1,4 @@
+pre-release-hook = ["git", "cliff", "-o", "CHANGELOG.md", "--tag", "{{version}}"]
+pre-release-replacements = [
+    {file="pyproject.toml", search='version = "[a-z0-9\\.-]+"', replace='version = "{{version}}"'}
+]
