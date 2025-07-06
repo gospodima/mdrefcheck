@@ -1,6 +1,6 @@
 # mdrefcheck
 
-**mdrefcheck** is a CLI tool to validate references and links in Markdown files.  
+**mdrefcheck** is a CLI tool to validate references and links in Markdown files (CommonMark spec).  
 It helps ensure that your documentation is free from broken links, missing images, and invalid section anchors.
 
 ---
@@ -21,4 +21,3 @@ From PyPI:
 ```bash
 pip install mdrefcheck
 ```
-
