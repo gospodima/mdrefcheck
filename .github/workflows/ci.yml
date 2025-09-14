@@ -153,14 +153,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN_PUBNEW }}
+        run: cargo publish --no-verify
+
       - uses: actions/download-artifact@v4
-        with:
-          path: artifacts
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: 'artifacts/**/*'
+          subject-path: 'wheels-*/*'
 
       - name: Publish to PyPI
         uses: PyO3/maturin-action@v1
@@ -168,18 +171,14 @@ jobs:
           MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         with:
           command: upload
-          args: --non-interactive --skip-existing artifacts/**/*.{whl,tar.gz}
-
-      - name: Publish to crates.io
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN_PUBNEW }}
-        run: cargo publish --no-verify
+          args: --non-interactive --skip-existing wheels-*/*
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
-          files: artifacts/**/*.{whl,tar.gz}
+          body_path: CHANGELOG.md
+          files: wheels-*/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

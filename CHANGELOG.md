@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.4] - 2025-09-14
+
+### CI
+
+- Move cargo pyblish before artifacts staff
+
 ## [0.1.3] - 2025-09-14
 
 ### CI
