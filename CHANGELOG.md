@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.3] - 2025-09-14
+
+### CI
+
+- Remove dist folder nesting on release
+
 ## [0.1.2] - 2025-09-14
 
 ### Documentation
