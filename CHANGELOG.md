@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.1.2] - 2025-09-14
+
+### Documentation
+
+- Adjust repo and home links to github
+
+### CI
+
+- Fix release steps
+
 ## [0.1.1] - 2025-09-14
 
 ### Documentation
