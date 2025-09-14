@@ -22,7 +22,7 @@ classifiers = [
 ]
 
 [project.urls]
-Repository = "https://gitlab.com/gospodima/mdrefcheck"
+Repository = "https://github.com/gospodima/mdrefcheck"
 
 [build-system]
 requires = ["maturin>=1.0"]
