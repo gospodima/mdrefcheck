@@ -4,5 +4,4 @@
   entry: mdrefcheck
   language: python
   types: [markdown]
-  require_serial: true
   args: []
