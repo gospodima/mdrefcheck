@@ -1,0 +1,8 @@
+- id: mdrefcheck
+  name: mdrefcheck
+  description: Validate references in Markdown files
+  entry: mdrefcheck
+  language: python
+  types: [markdown]
+  require_serial: true
+  args: []
