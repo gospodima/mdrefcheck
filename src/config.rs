@@ -3,11 +3,9 @@ use std::path::PathBuf;
 use clap::Parser;
 use regex::Regex;
 
-// TODO: add dir exclusion similar to files
-
 /// CLI configuration for mdrefcheck
 #[derive(Parser, Debug)]
-#[command(name = "mdrefcheck", about = "Check markdown references.")]
+#[command(name = "mdrefcheck", about = "Check markdown references.", version)]
 pub struct CliConfig {
     /// Paths to check
     #[arg(required = true, value_name = "PATH")]
