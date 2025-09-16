@@ -1,4 +1,5 @@
 pre-release-replacements = [
-    {file="pyproject.toml", search='version = "[a-z0-9\\.-]+"', replace='version = "{{version}}"'}
+    {file="pyproject.toml", search='version = "[a-z0-9\\.-]+"', replace='version = "{{version}}"'},
+    {file="README.md", search='rev: v[a-z0-9\\.-]+', replace='rev: v{{version}}'}
 ]
 pre-release-commit-message = "chore(release): prepare for {{version}}"
