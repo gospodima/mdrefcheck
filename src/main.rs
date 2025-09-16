@@ -9,6 +9,8 @@ use std::{fs, process};
 fn main() {
     let config = CliConfig::parse();
 
+    println!("{:?}", config);
+
     let exclude_paths = create_file_set(&config.exclude);
 
     let files = gather_markdown_files(&config.paths, &exclude_paths);
