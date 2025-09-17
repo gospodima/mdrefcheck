@@ -1,21 +1,25 @@
 # mdrefcheck
 
+[![PyPI version](https://img.shields.io/pypi/v/mdrefcheck.svg?logo=pypi&logoColor=white)](https://pypi.org/project/mdrefcheck/)
+[![crates.io version](https://img.shields.io/crates/v/mdrefcheck.svg?logo=rust&logoColor=white)](https://crates.io/crates/mdrefcheck)
+[![Build Status](https://github.com/gospodima/mdrefcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/gospodima/mdrefcheck/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
+> The project is in the early development stage - not ready for active use
+
 A CLI tool to validate references and links in Markdown files (CommonMark spec).  
 It helps to ensure that your documentation is free from broken section links, missing images or files.
 
 ## Features
 
-- Validate local file paths in image and section references
-- Check section links (`#heading-link`) match existing headings according to [GitHub Flavored Markdown (GFM)](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#section-links) rules
-- Identify broken reference-style links
-- Email validation
+- Validate local file paths in image and file references
+- Check section links against actual headings, following [GitHub Flavored Markdown (GFM)](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#section-links) rules, including cross-file references (e.g. `./subfolder/another-file.md#heading-link`)
+- Detect broken reference-style links
+- Basic email validation
 
 ## Installation
 
 ### Cargo
-
-`mdrefcheck` is also published on [crates.io](https://crates.io/) and can be installed 
-with cargo:
 
 ```bash
 cargo install mdrefcheck
@@ -23,21 +27,17 @@ cargo install mdrefcheck
 
 ### PyPI
 
-`mdrefcheck` can be installed with
-
 ```bash
 pip install mdrefcheck
 ```
 
-It also can be used as a tool in an isolated environment, e.g., with `uvx`:
+or run it directly in an isolated environment, e.g., with `uvx`:
 
 ```bash
 uvx mdrefcheck .
 ```
 
-### Pre-commit integration
-
-You can use `mdrefcheck` as a pre-commit hook.
+## Pre-commit integration
 
 Add this to your `.pre-commit-config.yaml`:
 
