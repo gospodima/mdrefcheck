@@ -10,7 +10,7 @@ pub fn create_options() -> Options {
     Options::ENABLE_FOOTNOTES | Options::ENABLE_WIKILINKS
 }
 
-/// Create HashSet of canonicalized paths from vector of paths 
+/// Create HashSet of canonicalized paths from vector of paths
 pub fn create_file_set(vec_files: &Vec<PathBuf>) -> HashSet<PathBuf> {
     vec_files
         .iter()
