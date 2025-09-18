@@ -42,7 +42,7 @@ Add this to your `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/gospodima/mdrefcheck
-    rev: v0.1.6
+    rev: v0.1.7
     hooks:
       - id: mdrefcheck
 ```
