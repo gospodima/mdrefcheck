@@ -8,7 +8,6 @@ pub fn validate_email(email: &str) -> Result<(), String> {
     }
 }
 
-
 /// Email validation according to https://spec.commonmark.org/0.31.2/#email-address
 fn is_valid_email(s: &str) -> bool {
     static EMAIL_RE: &str = r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";

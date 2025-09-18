@@ -10,7 +10,7 @@ pub fn create_options() -> Options {
     Options::ENABLE_FOOTNOTES | Options::ENABLE_WIKILINKS
 }
 
-/// Create HashSet of canonicalized paths from vector of paths 
+/// Create HashSet of canonicalized paths from vector of paths
 pub fn create_file_set(vec_files: &Vec<PathBuf>) -> HashSet<PathBuf> {
     vec_files
         .iter()
@@ -18,11 +18,16 @@ pub fn create_file_set(vec_files: &Vec<PathBuf>) -> HashSet<PathBuf> {
         .collect()
 }
 
-/// Return a path relative to current working directory
+/// Return a path relative to the current working directory
 pub fn relative_path(target: &Path) -> String {
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    pathdiff::diff_paths(target, cwd)
-        .unwrap_or_else(|| target.to_path_buf())
+
+    // Normalize target path first (fixes Windows \\?\ prefixes)
+    let normalized =
+        dunce::canonicalize(target).unwrap_or_else(|_| target.to_path_buf());
+
+    pathdiff::diff_paths(&normalized, cwd)
+        .unwrap_or(normalized)
         .display()
         .to_string()
 }
