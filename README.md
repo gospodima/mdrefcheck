@@ -5,8 +5,6 @@
 [![Build Status](https://github.com/gospodima/mdrefcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/gospodima/mdrefcheck/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-> The project is in the early development stage - not ready for active use
-
 A CLI tool to validate references and links in Markdown files (CommonMark spec).  
 It helps to ensure that your documentation is free from broken section links, missing images or files.
 
