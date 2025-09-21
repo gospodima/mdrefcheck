@@ -111,7 +111,7 @@ fn check_inline(
     validate_section_link(current_path, dest, doc_headings)
 }
 
-fn to_exclude(dest: &str, exclude_link_regexes: &Vec<Regex>) -> bool {
+fn to_exclude(dest: &str, exclude_link_regexes: &[Regex]) -> bool {
     exclude_link_regexes
         .iter()
         .any(|re| re.is_match(dest.as_ref()))

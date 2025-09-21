@@ -22,7 +22,7 @@ fn main() {
     {
         let errors = run_checks(&content, path, &mut section_links, &config);
         for err in &errors {
-            println!("{}", err);
+            println!("{err}");
         }
         if !errors.is_empty() {
             has_errors = true;
@@ -35,5 +35,5 @@ fn main() {
         process::exit(1);
     }
 
-    println!("{}", "No broken references found.".green())
+    println!("{}", "No broken references found.".green());
 }
