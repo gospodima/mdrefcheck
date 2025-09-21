@@ -19,3 +19,14 @@ pathdiff = "0.2.3"
 pulldown-cmark = "0.13.0"
 regex = "1.11.2"
 walkdir = "2.5.0"
+
+[package.metadata.release]
+pre-release-replacements = [
+  { file = "pyproject.toml", search = 'version = "[a-z0-9\\.-]+"', replace = 'version = "{{version}}"' },
+  { file = "README.md", search = 'rev: v[a-z0-9\\.-]+', replace = 'rev: v{{version}}' },
+]
+pre-release-commit-message = "chore(release): prepare for {{version}}"
+
+[lints.clippy]
+pedantic = "warn"
+
