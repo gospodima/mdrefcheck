@@ -10,9 +10,9 @@ pub fn validate_image(current_path: &Path, dest: &str) -> Result<(), String> {
         .unwrap_or_else(|| Path::new("."))
         .join(dest);
 
-    if !resolved.exists() {
-        Err(format!("Image not found: {}", dest))
-    } else {
+    if resolved.exists() {
         Ok(())
+    } else {
+        Err(format!("Image not found: {dest}"))
     }
 }

@@ -10,6 +10,8 @@ use crate::utils::create_options;
 pub type SectionLinkMap = HashMap<PathBuf, HashSet<String>>;
 
 /// Scan markdown file and collect section links based on its heading.
+/// # Errors
+/// This function will return an error if `path` does not already exist.
 pub fn parse_file_headings(path: &PathBuf) -> io::Result<HashSet<String>> {
     fs::read_to_string(path)
         .map(|content| crate::parser::collect_heading_links(&content))
@@ -34,6 +36,7 @@ pub fn parse_file_headings(path: &PathBuf) -> io::Result<HashSet<String>> {
 /// assert!(anchors.contains("intro-1"));
 /// assert!(anchors.contains("hello-world"));
 /// ```
+#[must_use]
 pub fn collect_heading_links(content: &str) -> HashSet<String> {
     let mut headings = HashSet::new();
     let mut heading_counter = HashMap::new();
@@ -53,7 +56,7 @@ pub fn collect_heading_links(content: &str) -> HashSet<String> {
             Event::End(TagEnd::Heading { .. }) => {
                 let base_link = heading2link(&current_heading);
                 let link = if let Some(counter) = heading_counter.get_mut(&base_link) {
-                    let numbered_link = format!("{}-{}", base_link, counter);
+                    let numbered_link = format!("{base_link}-{counter}");
                     *counter += 1;
                     numbered_link
                 } else {
@@ -82,6 +85,7 @@ pub fn collect_heading_links(content: &str) -> HashSet<String> {
 /// assert_eq!(heading2link("This -- Is__A_Test!"), "this----is__a_test");
 /// assert_eq!(heading2link("A heading with 💡 emoji!"), "a-heading-with--emoji");
 /// ```
+#[must_use]
 pub fn heading2link(text: &str) -> String {
     text.to_lowercase()
         .chars()

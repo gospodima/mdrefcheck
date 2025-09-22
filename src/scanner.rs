@@ -9,15 +9,17 @@ use walkdir::WalkDir;
 use crate::utils::relative_path;
 
 /// Gather markdown files from paths (file or dir)
-pub fn gather_markdown_files(
+#[must_use]
+pub fn gather_markdown_files<S: ::std::hash::BuildHasher>(
     paths: &[PathBuf],
-    exclude: &HashSet<PathBuf>,
+    exclude: &HashSet<PathBuf, S>,
 ) -> Vec<PathBuf> {
     paths
         .iter()
-        .flat_map(|path| match fs::canonicalize(path) {
-            Ok(canonical) => collect_markdown_from_path(&canonical, exclude),
-            Err(_) => {
+        .flat_map(|path| {
+            if let Ok(canonical) = fs::canonicalize(path) {
+                collect_markdown_from_path(&canonical, exclude)
+            } else {
                 eprintln!(
                     "{}",
                     format!("Skipping invalid path: {}", path.display()).yellow()
@@ -29,7 +31,10 @@ pub fn gather_markdown_files(
 }
 
 /// Collect markdown file(s) from a path (file or dir)
-fn collect_markdown_from_path(path: &Path, exclude: &HashSet<PathBuf>) -> Vec<PathBuf> {
+fn collect_markdown_from_path<S: ::std::hash::BuildHasher>(
+    path: &Path,
+    exclude: &HashSet<PathBuf, S>,
+) -> Vec<PathBuf> {
     if exclude.contains(path) {
         eprintln!(
             "{}",
@@ -50,7 +55,7 @@ fn collect_markdown_from_path(path: &Path, exclude: &HashSet<PathBuf>) -> Vec<Pa
                 entry
                     .path()
                     .canonicalize()
-                    .map_or(false, |p| !exclude.contains(&p))
+                    .is_ok_and(|p| !exclude.contains(&p))
             })
             .filter_map(Result::ok)
             .filter(|entry| is_markdown_file(entry.path()))
@@ -63,5 +68,5 @@ fn collect_markdown_from_path(path: &Path, exclude: &HashSet<PathBuf>) -> Vec<Pa
 
 /// Determine if the given file path is a markdown file
 fn is_markdown_file(path: &Path) -> bool {
-    path.is_file() && path.extension().map_or(false, |ext| ext == "md")
+    path.is_file() && path.extension().is_some_and(|ext| ext == "md")
 }
