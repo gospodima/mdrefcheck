@@ -12,12 +12,13 @@ keywords = ["markdown", "cli", "reference", "link-checker", "docs"]
 categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
-clap = { version = "4.5.47", features = ["derive"] }
+clap = { version = "4.5.49", features = ["derive"] }
 colored = "3.0.0"
 dunce = "1.0.5"
 pathdiff = "0.2.3"
 pulldown-cmark = "0.13.0"
-regex = "1.11.2"
+regex = "1.12.2"
+tempfile = "3.23.0"
 walkdir = "2.5.0"
 
 [package.metadata.release]

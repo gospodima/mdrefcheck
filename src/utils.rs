@@ -58,3 +58,86 @@ pub fn offset_to_line_col(offset: usize, line_starts: &[usize]) -> (usize, usize
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_create_options() {
+        let opts = create_options();
+        assert!(opts.contains(Options::ENABLE_FOOTNOTES));
+        assert!(opts.contains(Options::ENABLE_WIKILINKS));
+    }
+
+    #[test]
+    fn test_create_file_set_with_valid_paths() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("test.txt");
+        fs::write(&file_path, "hello").unwrap();
+
+        let vec_files = vec![file_path.clone()];
+        let set = create_file_set(&vec_files);
+
+        assert_eq!(set.len(), 1);
+        assert!(set.contains(&fs::canonicalize(&file_path).unwrap()));
+    }
+
+    #[test]
+    fn test_create_file_set_with_invalid_path() {
+        let invalid = PathBuf::from("/nonexistent/path.txt");
+        let set = create_file_set(&[invalid]);
+        assert!(set.is_empty());
+    }
+
+    #[test]
+    fn test_relative_path_within_cwd() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("foo.txt");
+        fs::write(&file_path, "data").unwrap();
+
+        let rel = relative_path(&file_path);
+        assert!(rel.contains("foo.txt"));
+    }
+
+    // TODO: improve nonexistent file handling?
+    #[test]
+    fn test_relative_path_nonexistent_file() {
+        let path = PathBuf::from("does_not_exist.txt");
+        let rel = relative_path(&path);
+        assert!(rel.contains("does_not_exist.txt"));
+    }
+
+    #[test]
+    fn test_compute_line_starts() {
+        let text = "line1\nline2\nline3";
+        let starts = compute_line_starts(text);
+        assert_eq!(starts, vec![0, 6, 12]);
+    }
+
+    #[test]
+    fn test_offset_to_line_col_exact_match() {
+        let text = "a\nb\nc";
+        let starts = compute_line_starts(text);
+        // offset 0 = line 1, col 1
+        assert_eq!(offset_to_line_col(0, &starts), (1, 1));
+        // offset 2 = start of line 2
+        assert_eq!(offset_to_line_col(2, &starts), (2, 1));
+    }
+
+    #[test]
+    fn test_offset_to_line_col_between_lines() {
+        let text = "hello\nworld";
+        let starts = compute_line_starts(text);
+        // "world" starts at offset 6
+        assert_eq!(offset_to_line_col(7, &starts), (2, 2)); // 'o' in world
+    }
+
+    #[test]
+    fn test_offset_to_line_col_end_of_text() {
+        let text = "abc";
+        let starts = compute_line_starts(text);
+        assert_eq!(offset_to_line_col(3, &starts), (1, 4)); // after last char
+    }
+}
