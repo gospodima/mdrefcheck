@@ -1,3 +1,4 @@
+use dashmap::DashMap;
 use pulldown_cmark::{Event, Parser, Tag, TagEnd, TextMergeStream};
 use std::{
     collections::{HashMap, HashSet},
@@ -7,7 +8,7 @@ use std::{
 
 use crate::utils::create_options;
 
-pub type SectionLinkMap = HashMap<PathBuf, HashSet<String>>;
+pub type SectionLinkMap = DashMap<PathBuf, HashSet<String>>;
 
 /// Scan markdown file and collect section links based on its heading.
 /// # Errors

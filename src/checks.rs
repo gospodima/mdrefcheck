@@ -13,14 +13,14 @@ use crate::diagnostics::ValidationError;
 use crate::parser;
 use crate::utils::{compute_line_starts, create_options, offset_to_line_col};
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
-use std::path::{Path, PathBuf};
+use std::path::Path;
+use std::sync::Arc;
 
 /// Dispatch all checks and return errors
 pub fn run_checks(
     content: &str,
     path: &Path,
-    section_links: &mut parser::SectionLinkMap,
+    section_links: &Arc<parser::SectionLinkMap>,
     config: &CliConfig,
 ) -> Vec<ValidationError> {
     let errors = RefCell::new(Vec::new());
@@ -98,7 +98,7 @@ pub fn run_checks(
 fn check_inline(
     current_path: &Path,
     dest: &str,
-    doc_headings: &mut HashMap<PathBuf, HashSet<String>>,
+    doc_headings: &Arc<parser::SectionLinkMap>,
 ) -> Result<(), String> {
     if dest.starts_with("http://") || dest.starts_with("https://") {
         return Ok(());
