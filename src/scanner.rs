@@ -26,7 +26,6 @@ pub fn gather_markdown_files(
         }
     };
 
-    // 2. Build the --exclude overrides
     let overrides = {
         let mut ob = OverrideBuilder::new(".");
 

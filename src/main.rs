@@ -12,6 +12,11 @@ fn main() {
     let config = CliConfig::parse();
     let start_time = Instant::now();
 
+    env_logger::Builder::new()
+        .filter_level(config.verbosity.log_level_filter())
+        .write_style(env_logger::WriteStyle::Always) // Ensures colors are on
+        .init();
+
     let files = gather_markdown_files(&config.paths, &config.exclude);
 
     println!(
