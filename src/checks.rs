@@ -17,6 +17,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 /// Dispatch all checks and return errors
+#[must_use]
 pub fn run_checks(
     content: &str,
     path: &Path,

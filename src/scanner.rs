@@ -1,72 +1,80 @@
-use colored::Colorize;
-use std::{
-    collections::HashSet,
-    fs,
-    path::{Path, PathBuf},
-};
-use walkdir::WalkDir;
+use ignore::{WalkBuilder, overrides::OverrideBuilder, types::TypesBuilder};
+use log::{debug, warn};
+use path_clean::PathClean;
+use std::path::PathBuf;
 
-use crate::utils::relative_path;
-
-/// Gather markdown files from paths (file or dir)
+/// Gathers Markdown files recursively under the given paths.
 #[must_use]
-pub fn gather_markdown_files<S: ::std::hash::BuildHasher>(
+pub fn gather_markdown_files(
     paths: &[PathBuf],
-    exclude: &HashSet<PathBuf, S>,
+    exclude_paths: &[PathBuf],
 ) -> Vec<PathBuf> {
-    paths
-        .iter()
-        .flat_map(|path| {
-            if let Ok(canonical) = fs::canonicalize(path) {
-                collect_markdown_from_path(&canonical, exclude)
-            } else {
-                eprintln!(
-                    "{}",
-                    format!("Skipping invalid path: {}", path.display()).yellow()
-                );
-                vec![]
-            }
-        })
-        .collect()
-}
-
-/// Collect markdown file(s) from a path (file or dir)
-fn collect_markdown_from_path<S: ::std::hash::BuildHasher>(
-    path: &Path,
-    exclude: &HashSet<PathBuf, S>,
-) -> Vec<PathBuf> {
-    if exclude.contains(path) {
-        eprintln!(
-            "{}",
-            format!(
-                "Skipping directly specified and excluded path: {}",
-                relative_path(path)
-            )
-            .yellow()
-        );
+    if paths.is_empty() {
+        warn!("No paths provided to scan.");
         return vec![];
     }
-    if is_markdown_file(path) {
-        vec![path.to_path_buf()]
-    } else if path.is_dir() {
-        WalkDir::new(path)
-            .into_iter()
-            .filter_entry(|entry| {
-                entry
-                    .path()
-                    .canonicalize()
-                    .is_ok_and(|p| !exclude.contains(&p))
-            })
-            .filter_map(Result::ok)
-            .filter(|entry| is_markdown_file(entry.path()))
-            .filter_map(|entry| fs::canonicalize(entry.path()).ok())
-            .collect()
-    } else {
-        vec![]
-    }
-}
 
-/// Determine if the given file path is a markdown file
-fn is_markdown_file(path: &Path) -> bool {
-    path.is_file() && path.extension().is_some_and(|ext| ext == "md")
+    let types = match TypesBuilder::new()
+        .add_defaults()
+        .select("markdown")
+        .build()
+    {
+        Ok(t) => t,
+        Err(e) => {
+            warn!("Failed to build markdown filter: {e}");
+            return vec![];
+        }
+    };
+
+    // 2. Build the --exclude overrides
+    let overrides = {
+        let mut ob = OverrideBuilder::new(".");
+
+        for path in exclude_paths {
+            // Convert to string and normalize slashes for the glob
+            let glob_str = path
+                .clean()
+                .to_string_lossy()
+                .replace(std::path::MAIN_SEPARATOR, "/");
+
+            // Add '!' to make it an *ignore* pattern
+            let ignore_glob = format!("!{glob_str}");
+            debug!("Adding exclude rule: {ignore_glob}");
+
+            if let Err(e) = ob.add(&ignore_glob) {
+                warn!("Invalid exclude pattern '{}': {}", path.display(), e);
+            }
+        }
+
+        match ob.build() {
+            Ok(o) => o,
+            Err(e) => {
+                warn!("Failed to build exclude override rules: {e}");
+                return vec![];
+            }
+        }
+    };
+
+    let walker = {
+        let mut wb = WalkBuilder::new(&paths[0]);
+        for path in &paths[1..] {
+            wb.add(path);
+        }
+        wb.standard_filters(true)
+            .types(types)
+            .overrides(overrides)
+            .build()
+    };
+
+    walker
+        .filter_map(|entry_result| match entry_result {
+            Ok(entry) => Some(entry),
+            Err(e) => {
+                warn!("Error scanning path: {e}");
+                None
+            }
+        })
+        .filter(|entry| entry.file_type().is_some_and(|ft| ft.is_file()))
+        .map(|entry| entry.path().to_path_buf())
+        .collect()
 }

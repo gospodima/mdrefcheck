@@ -1,9 +1,9 @@
 use clap::Parser;
 use colored::Colorize;
+use mdrefcheck::checks::run_checks;
 use mdrefcheck::config::CliConfig;
 use mdrefcheck::parser::SectionLinkMap;
 use mdrefcheck::scanner::gather_markdown_files;
-use mdrefcheck::{checks::run_checks, utils::create_file_set};
 use rayon::prelude::*;
 use std::sync::Arc;
 use std::{fs, process, time::Instant};
@@ -12,9 +12,14 @@ fn main() {
     let config = CliConfig::parse();
     let start_time = Instant::now();
 
-    let exclude_paths = create_file_set(&config.exclude);
+    let files = gather_markdown_files(&config.paths, &config.exclude);
 
-    let files = gather_markdown_files(&config.paths, &exclude_paths);
+    println!(
+        "File scan completed in {:.2?}, {} md files gathered",
+        start_time.elapsed(),
+        files.len()
+    );
+
     let section_links = Arc::new(SectionLinkMap::new());
 
     let mut all_errors: Vec<_> = files
