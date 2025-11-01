@@ -1,5 +1,5 @@
 use ignore::{WalkBuilder, overrides::OverrideBuilder, types::TypesBuilder};
-use log::{debug, warn};
+use log::{debug, error, warn};
 use path_clean::PathClean;
 use std::path::PathBuf;
 
@@ -21,7 +21,7 @@ pub fn gather_markdown_files(
     {
         Ok(t) => t,
         Err(e) => {
-            warn!("Failed to build markdown filter: {e}");
+            error!("Failed to build markdown filter: {e}");
             return vec![];
         }
     };
