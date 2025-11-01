@@ -1,8 +1,6 @@
-use crate::utils::relative_path;
 use colored::Colorize;
 use std::path::Path;
 
-/// Represents a markdown validation issue (Ruff-compatible output)
 pub struct ValidationError {
     pub path: String,
     pub line: usize,
@@ -18,7 +16,7 @@ impl ValidationError {
         message: impl Into<String>,
     ) -> Self {
         Self {
-            path: relative_path(path),
+            path: path.display().to_string(),
             line,
             col,
             message: message.into(),

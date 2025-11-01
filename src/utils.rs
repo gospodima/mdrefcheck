@@ -1,38 +1,8 @@
-use std::{
-    collections::HashSet,
-    fs,
-    path::{Path, PathBuf},
-};
-
 use pulldown_cmark::Options;
 
 #[must_use]
 pub fn create_options() -> Options {
     Options::ENABLE_FOOTNOTES | Options::ENABLE_WIKILINKS
-}
-
-/// Create ``HashSet`` of canonicalized paths from vector of paths
-#[must_use]
-pub fn create_file_set(vec_files: &[PathBuf]) -> HashSet<PathBuf> {
-    vec_files
-        .iter()
-        .filter_map(|s| fs::canonicalize(s).ok())
-        .collect()
-}
-
-/// Return a path relative to the current working directory
-#[must_use]
-pub fn relative_path(target: &Path) -> String {
-    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-
-    // Normalize target path first (fixes Windows \\?\ prefixes)
-    let normalized =
-        dunce::canonicalize(target).unwrap_or_else(|_| target.to_path_buf());
-
-    pathdiff::diff_paths(&normalized, cwd)
-        .unwrap_or(normalized)
-        .display()
-        .to_string()
 }
 
 /// Return a Vec where each entry is the byte offset of the start of a line
@@ -61,52 +31,14 @@ pub fn offset_to_line_col(offset: usize, line_starts: &[usize]) -> (usize, usize
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
-    use tempfile::tempdir;
 
     #[test]
     fn test_create_options() {
         let opts = create_options();
         assert!(opts.contains(Options::ENABLE_FOOTNOTES));
         assert!(opts.contains(Options::ENABLE_WIKILINKS));
-    }
-
-    #[test]
-    fn test_create_file_set_with_valid_paths() {
-        let dir = tempdir().unwrap();
-        let file_path = dir.path().join("test.txt");
-        fs::write(&file_path, "hello").unwrap();
-
-        let vec_files = vec![file_path.clone()];
-        let set = create_file_set(&vec_files);
-
-        assert_eq!(set.len(), 1);
-        assert!(set.contains(&fs::canonicalize(&file_path).unwrap()));
-    }
-
-    #[test]
-    fn test_create_file_set_with_invalid_path() {
-        let invalid = PathBuf::from("/nonexistent/path.txt");
-        let set = create_file_set(&[invalid]);
-        assert!(set.is_empty());
-    }
-
-    #[test]
-    fn test_relative_path_within_cwd() {
-        let dir = tempdir().unwrap();
-        let file_path = dir.path().join("foo.txt");
-        fs::write(&file_path, "data").unwrap();
-
-        let rel = relative_path(&file_path);
-        assert!(rel.contains("foo.txt"));
-    }
-
-    // TODO: improve nonexistent file handling?
-    #[test]
-    fn test_relative_path_nonexistent_file() {
-        let path = PathBuf::from("does_not_exist.txt");
-        let rel = relative_path(&path);
-        assert!(rel.contains("does_not_exist.txt"));
     }
 
     #[test]
