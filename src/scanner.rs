@@ -3,7 +3,7 @@ use log::{debug, error, warn};
 use path_clean::PathClean;
 use std::path::PathBuf;
 
-/// Gather Markdown files recursively under the given paths.
+/// Gathers Markdown files recursively under the given paths.
 #[must_use]
 pub fn gather_markdown_files(
     paths: &[PathBuf],
@@ -48,34 +48,15 @@ pub fn gather_markdown_files(
         match ob.build() {
             Ok(o) => o,
             Err(e) => {
-                error!("Failed to build exclude override rules: {e}");
+                warn!("Failed to build exclude override rules: {e}");
                 return vec![];
             }
         }
     };
 
-    // Pre-filter the input paths. WalkBuilder won't filter root paths automatically.
-    let mut filtered_paths = Vec::new();
-    for path in paths {
-        let clean_path = path.clean();
-
-        let match_type = overrides.matched(&clean_path, clean_path.is_dir());
-
-        if match_type.is_ignore() {
-            debug!("Excluding path via pre-filter: {}", path.display());
-        } else {
-            filtered_paths.push(path.clone());
-        }
-    }
-
-    if filtered_paths.is_empty() {
-        debug!("All input paths were excluded or empty.");
-        return vec![];
-    }
-
     let walker = {
-        let mut wb = WalkBuilder::new(&filtered_paths[0]);
-        for path in &filtered_paths[1..] {
+        let mut wb = WalkBuilder::new(&paths[0]);
+        for path in &paths[1..] {
             wb.add(path);
         }
         wb.standard_filters(true)
