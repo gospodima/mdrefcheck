@@ -1,11 +1,11 @@
-use std::{fs, path::Path};
+use std::{fs, path::Path, sync::Arc};
 
 use crate::parser;
 
 pub fn validate_section_link(
     current_path: &Path,
     dest: &str,
-    section_links: &mut parser::SectionLinkMap,
+    section_links: &Arc<parser::SectionLinkMap>,
 ) -> Result<(), String> {
     let (file_part, heading_part) = dest
         .split_once('#')

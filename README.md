@@ -14,6 +14,7 @@ It helps to ensure that your documentation is free from broken section links, mi
 - Check section links against actual headings, following [GitHub Flavored Markdown (GFM)](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#section-links) rules, including cross-file references (e.g. `./subfolder/another-file.md#heading-link`)
 - Detect broken reference-style links
 - Basic email validation
+- Ignore files support via [ignore](https://docs.rs/ignore/latest/ignore/) crate.
 
 ## Installation
 

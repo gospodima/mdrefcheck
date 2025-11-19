@@ -1,38 +1,8 @@
-use std::{
-    collections::HashSet,
-    fs,
-    path::{Path, PathBuf},
-};
-
 use pulldown_cmark::Options;
 
 #[must_use]
 pub fn create_options() -> Options {
     Options::ENABLE_FOOTNOTES | Options::ENABLE_WIKILINKS
-}
-
-/// Create ``HashSet`` of canonicalized paths from vector of paths
-#[must_use]
-pub fn create_file_set(vec_files: &[PathBuf]) -> HashSet<PathBuf> {
-    vec_files
-        .iter()
-        .filter_map(|s| fs::canonicalize(s).ok())
-        .collect()
-}
-
-/// Return a path relative to the current working directory
-#[must_use]
-pub fn relative_path(target: &Path) -> String {
-    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-
-    // Normalize target path first (fixes Windows \\?\ prefixes)
-    let normalized =
-        dunce::canonicalize(target).unwrap_or_else(|_| target.to_path_buf());
-
-    pathdiff::diff_paths(&normalized, cwd)
-        .unwrap_or(normalized)
-        .display()
-        .to_string()
 }
 
 /// Return a Vec where each entry is the byte offset of the start of a line
@@ -56,5 +26,50 @@ pub fn offset_to_line_col(offset: usize, line_starts: &[usize]) -> (usize, usize
             let col = offset - line_starts[line] + 1;
             (line + 1, col)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_create_options() {
+        let opts = create_options();
+        assert!(opts.contains(Options::ENABLE_FOOTNOTES));
+        assert!(opts.contains(Options::ENABLE_WIKILINKS));
+    }
+
+    #[test]
+    fn test_compute_line_starts() {
+        let text = "line1\nline2\nline3";
+        let starts = compute_line_starts(text);
+        assert_eq!(starts, vec![0, 6, 12]);
+    }
+
+    #[test]
+    fn test_offset_to_line_col_exact_match() {
+        let text = "a\nb\nc";
+        let starts = compute_line_starts(text);
+        // offset 0 = line 1, col 1
+        assert_eq!(offset_to_line_col(0, &starts), (1, 1));
+        // offset 2 = start of line 2
+        assert_eq!(offset_to_line_col(2, &starts), (2, 1));
+    }
+
+    #[test]
+    fn test_offset_to_line_col_between_lines() {
+        let text = "hello\nworld";
+        let starts = compute_line_starts(text);
+        // "world" starts at offset 6
+        assert_eq!(offset_to_line_col(7, &starts), (2, 2)); // 'o' in world
+    }
+
+    #[test]
+    fn test_offset_to_line_col_end_of_text() {
+        let text = "abc";
+        let starts = compute_line_starts(text);
+        assert_eq!(offset_to_line_col(3, &starts), (1, 4)); // after last char
     }
 }
