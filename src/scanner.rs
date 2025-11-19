@@ -1,7 +1,7 @@
 use ignore::{WalkBuilder, overrides::OverrideBuilder, types::TypesBuilder};
 use log::{debug, error, warn};
 use path_clean::PathClean;
-use std::path::PathBuf;
+use std::{collections::HashSet, path::PathBuf};
 
 /// Gathers Markdown files recursively under the given paths.
 #[must_use]
@@ -48,11 +48,36 @@ pub fn gather_markdown_files(
         match ob.build() {
             Ok(o) => o,
             Err(e) => {
-                warn!("Failed to build exclude override rules: {e}");
+                error!("Failed to build exclude override rules: {e}");
                 return vec![];
             }
         }
     };
+
+    // Pre-filtering the initial input paths
+    // https://github.com/BurntSushi/ripgrep/issues/2986
+
+    let exclude_set: HashSet<PathBuf> =
+        exclude_paths.iter().map(PathClean::clean).collect();
+
+    let filtered_paths: Vec<PathBuf> = paths
+        .iter()
+        .filter(|path| {
+            let clean_path = path.clean();
+            let is_excluded = clean_path.ancestors().any(|a| exclude_set.contains(a));
+
+            if is_excluded {
+                debug!("Excluding root path: {}", path.display());
+            }
+            !is_excluded
+        })
+        .cloned()
+        .collect();
+
+    if filtered_paths.is_empty() {
+        debug!("All input paths were excluded or empty.");
+        return vec![];
+    }
 
     let walker = {
         let mut wb = WalkBuilder::new(&paths[0]);
