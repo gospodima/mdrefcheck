@@ -80,8 +80,8 @@ pub fn gather_markdown_files(
     }
 
     let walker = {
-        let mut wb = WalkBuilder::new(&paths[0]);
-        for path in &paths[1..] {
+        let mut wb = WalkBuilder::new(&filtered_paths[0]);
+        for path in &filtered_paths[1..] {
             wb.add(path);
         }
         wb.standard_filters(true)
