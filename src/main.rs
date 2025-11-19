@@ -18,7 +18,7 @@ fn main() {
         .write_style(env_logger::WriteStyle::Always)
         .init();
 
-    let files = gather_markdown_files(&config.paths, &config.exclude);
+    let files = gather_markdown_files(&config.paths, &config.exclude, config.no_ignore);
 
     println!(
         "File scan completed in {:.2?}, {} md files gathered",

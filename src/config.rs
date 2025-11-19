@@ -20,6 +20,10 @@ pub struct CliConfig {
     #[arg(long, short, value_name = "PATH")]
     pub exclude: Vec<PathBuf>,
 
+    /// Disable standard ignore filters (gitignore, hidden files, etc.)
+    #[arg(long)]
+    pub no_ignore: bool,
+
     // -q, --quiet   (decreases verbosity)
     // -v, --verbose (increases verbosity, up to 2 times for 'trace')
     #[command(flatten)]

@@ -8,6 +8,7 @@ use std::{collections::HashSet, path::PathBuf};
 pub fn gather_markdown_files(
     paths: &[PathBuf],
     exclude_paths: &[PathBuf],
+    no_ignore: bool,
 ) -> Vec<PathBuf> {
     if paths.is_empty() {
         warn!("No paths provided to scan.");
@@ -84,7 +85,7 @@ pub fn gather_markdown_files(
         for path in &filtered_paths[1..] {
             wb.add(path);
         }
-        wb.standard_filters(true)
+        wb.standard_filters(!no_ignore)
             .types(types)
             .overrides(overrides)
             .build()
