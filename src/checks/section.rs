@@ -40,3 +40,36 @@ pub fn validate_section_link(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::sync::Arc;
+    use tempfile::tempdir;
+
+    #[test]
+    fn validate_existing_and_missing_headings() {
+        let dir = tempdir().unwrap();
+        let cur = dir.path().join("cur.md");
+        let tgt = dir.path().join("tgt.md");
+
+        fs::write(&cur, "[link](tgt.md#intro)").unwrap();
+        fs::write(&tgt, "# Intro\n## Other").unwrap();
+
+        let map = Arc::new(parser::SectionLinkMap::new());
+
+        // valid
+        assert!(validate_section_link(&cur, "tgt.md#intro", &map).is_ok());
+
+        // missing heading
+        let err = validate_section_link(&cur, "tgt.md#missing", &map);
+        assert!(err.is_err());
+        assert!(err.err().unwrap().contains("Missing heading"));
+
+        // missing file
+        let err2 = validate_section_link(&cur, "nope.md#h", &map);
+        assert!(err2.is_err());
+        assert!(err2.err().unwrap().contains("File not found"));
+    }
+}

@@ -16,3 +16,26 @@ pub fn validate_image(current_path: &Path, dest: &str) -> Result<(), String> {
         Err(format!("Image not found: {dest}"))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::tempdir;
+
+    #[test]
+    fn image_local_found_and_missing() {
+        let dir = tempdir().unwrap();
+        let cur = dir.path().join("cur.md");
+        fs::write(&cur, "# hi").unwrap();
+
+        let img = dir.path().join("img.png");
+        fs::write(&img, "data").unwrap();
+
+        // relative to current file
+        assert!(validate_image(&cur, "img.png").is_ok());
+
+        // missing
+        assert!(validate_image(&cur, "missing.png").is_err());
+    }
+}
