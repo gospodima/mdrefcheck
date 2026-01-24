@@ -103,3 +103,39 @@ pub fn gather_markdown_files(
         .map(|entry| entry.path().to_path_buf())
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::tempdir;
+
+    #[test]
+    fn returns_empty_on_no_paths() {
+        let r = gather_markdown_files(&[], &[], true);
+        assert!(r.is_empty());
+    }
+
+    #[test]
+    fn finds_markdown_in_dir() {
+        let dir = tempdir().unwrap();
+        let md = dir.path().join("foo.md");
+        fs::write(&md, "# hi").unwrap();
+
+        let res = gather_markdown_files(&[dir.path().to_path_buf()], &[], true);
+        assert!(res.iter().any(|p| p.ends_with("foo.md")));
+    }
+
+    #[test]
+    fn excluding_input_root_yields_no_files() {
+        let dir = tempdir().unwrap();
+        let sub = dir.path().join("sub");
+        std::fs::create_dir_all(&sub).unwrap();
+        let f = sub.join("a.md");
+        fs::write(&f, "# hello").unwrap();
+
+        let single = vec![sub.clone()];
+        let res = gather_markdown_files(&single, &single, true);
+        assert!(res.is_empty());
+    }
+}
