@@ -108,3 +108,48 @@ fn test_ignore_regex_skips_validation_cli() {
     // --ignore should prevent validation of that link
     cmd.assert().success();
 }
+
+#[test]
+fn test_multiple_headings_cli() {
+    let dir = tempfile::tempdir().unwrap();
+    let tgt = dir.path().join("tgt.md");
+    let src = dir.path().join("src.md");
+
+    fs::write(&tgt, "# One\n## Two\n### Three").unwrap();
+    fs::write(
+        &src,
+        "[a](./tgt.md#one)\n[b](./tgt.md#two)\n[c](./tgt.md#three)",
+    )
+    .unwrap();
+
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("mdrefcheck");
+    cmd.arg(dir.path());
+    cmd.assert().success();
+}
+
+#[test]
+fn test_repeated_headings_cli() {
+    let dir = tempfile::tempdir().unwrap();
+    let tgt = dir.path().join("tgt.md");
+    let src = dir.path().join("src.md");
+
+    // three identical headings -> anchors: intro, intro-1, intro-2
+    fs::write(&tgt, "# Intro\n# Intro\n# Intro").unwrap();
+    fs::write(
+        &src,
+        "[a](./tgt.md#intro)\n[b](./tgt.md#intro-1)\n[c](./tgt.md#intro-2)",
+    )
+    .unwrap();
+
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("mdrefcheck");
+    cmd.arg(dir.path());
+    cmd.assert().success();
+
+    // referencing a non-existent numbered anchor should fail
+    fs::write(&src, "[d](./tgt.md#intro-3)").unwrap();
+    let mut cmd2 = assert_cmd::cargo::cargo_bin_cmd!("mdrefcheck");
+    cmd2.arg(dir.path());
+    cmd2.assert()
+        .failure()
+        .stdout(predicate::str::contains("Missing heading"));
+}
