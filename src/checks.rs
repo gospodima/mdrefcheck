@@ -11,7 +11,9 @@ use crate::checks::section::validate_section_link;
 use crate::config::CliConfig;
 use crate::diagnostics::ValidationError;
 use crate::parser;
-use crate::utils::{compute_line_starts, create_options, offset_to_line_col};
+use crate::utils::{
+    compute_line_starts, create_options, is_external, offset_to_line_col,
+};
 use std::cell::RefCell;
 use std::path::Path;
 use std::sync::Arc;
@@ -101,12 +103,12 @@ fn check_inline(
     dest: &str,
     doc_headings: &Arc<parser::SectionLinkMap>,
 ) -> Result<(), String> {
-    if dest.starts_with("http://") || dest.starts_with("https://") {
-        return Ok(());
+    if let Some(email) = dest.strip_prefix("mailto:") {
+        return validate_email(email.split_once('?').map_or(email, |(e, _)| e));
     }
 
-    if let Some(email) = dest.strip_prefix("mailto:") {
-        return validate_email(email);
+    if is_external(dest) {
+        return Ok(());
     }
 
     validate_section_link(current_path, dest, doc_headings)
