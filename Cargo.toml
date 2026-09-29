@@ -12,18 +12,18 @@ keywords = ["markdown", "cli", "reference", "link-checker", "docs"]
 categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
-clap = { version = "4.5.54", features = ["derive"] }
+clap = { version = "4.6.7", features = ["derive"] }
 clap-verbosity-flag = "3.0.4"
 colored = "3.1.1"
-dashmap = "6.1.0"
-env_logger = "0.11.8"
-ignore = "0.4.25"
-log = "0.4.29"
+dashmap = "6.2.1"
+env_logger = "0.11.11"
+ignore = "0.4.33"
+log = "0.4.34"
 path-clean = "1.0.1"
 pathdiff = "0.2.3"
-pulldown-cmark = "0.13.0"
-rayon = "1.11.0"
-regex = "1.12.2"
+pulldown-cmark = "0.13.4"
+rayon = "1.12.0"
+regex = "1.13.1"
 walkdir = "2.5.0"
 
 [dev-dependencies]
