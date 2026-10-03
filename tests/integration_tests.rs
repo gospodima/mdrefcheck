@@ -184,6 +184,27 @@ fn test_undefined_reference_cli() {
 }
 
 #[test]
+fn test_reference_targets_checked_cli() {
+    for content in [
+        "[id]\n\n[id]: ./missing.md",
+        "[c][]\n\n[c]: ./missing.md",
+        "[t][r]\n\n[r]: ./missing.md \"Title\"",
+    ] {
+        check_content(content)
+            .failure()
+            .stdout(predicate::str::contains("File not found: ./missing.md"));
+    }
+    check_content(
+        "# Title\n\n[id] [c][] [t][r] <https://example.com>\n\n\
+         [id]: ./doc.md#title\n[c]: ./a%20b.png\n[r]: #title",
+    )
+    .success();
+    check_content("# Title\n\n[id]\n\n[id]: #nope")
+        .failure()
+        .stdout(predicate::str::contains("Missing heading #nope"));
+}
+
+#[test]
 fn test_top_anchor_schemes_and_mailto_query_cli() {
     check_content(
         "[t](#)\n[c](tel:+123)\n[u](HTTPS://example.com)\n[m](mailto:a@b.com?subject=hi)",

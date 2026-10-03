@@ -62,7 +62,13 @@ pub fn run_checks(
                 dest_url,
                 ..
             }) => match link_type {
-                LinkType::Inline if !to_exclude(&dest_url, &config.ignore) => {
+                LinkType::Inline
+                | LinkType::Reference
+                | LinkType::Collapsed
+                | LinkType::Shortcut
+                | LinkType::Autolink
+                    if !to_exclude(&dest_url, &config.ignore) =>
+                {
                     if let Err(e) = check_inline(path, &dest_url, section_links) {
                         errors
                             .borrow_mut()
