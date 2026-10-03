@@ -27,7 +27,8 @@ pub fn validate_section_link(
     if let Some(heading) = heading_part.filter(|h| !h.is_empty())
         && !section_links
             .entry(target_file.clone())
-            .or_insert_with(|| parser::parse_file_headings(&target_file).unwrap())
+            .or_try_insert_with(|| parser::parse_file_headings(&target_file))
+            .map_err(|e| format!("Cannot read {file_part}: {e}"))?
             .contains(&heading)
     {
         return Err(format!(
@@ -73,5 +74,10 @@ mod tests {
         let err2 = validate_section_link(&cur, "nope.md#h", &map);
         assert!(err2.is_err());
         assert!(err2.err().unwrap().contains("File not found"));
+
+        // directory with heading reports error instead of panicking
+        fs::create_dir(dir.path().join("sub")).unwrap();
+        let err3 = validate_section_link(&cur, "sub/#h", &map);
+        assert!(err3.err().unwrap().contains("Cannot read sub/"));
     }
 }
