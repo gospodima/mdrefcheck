@@ -2,6 +2,7 @@ use clap::Parser;
 use colored::Colorize;
 use mdrefcheck::checks::run_checks;
 use mdrefcheck::config::CliConfig;
+use mdrefcheck::diagnostics::ValidationError;
 use mdrefcheck::parser::SectionLinkMap;
 use mdrefcheck::scanner::gather_markdown_files;
 use rayon::prelude::*;
@@ -31,9 +32,15 @@ fn main() {
     let mut all_errors: Vec<_> = files
         .par_iter()
         .filter_map(|path| {
-            let content = fs::read_to_string(path).ok()?;
-
-            let errors = run_checks(&content, path, &section_links, &config);
+            let errors = match fs::read_to_string(path) {
+                Ok(content) => run_checks(&content, path, &section_links, &config),
+                Err(e) => vec![ValidationError::new(
+                    path,
+                    1,
+                    1,
+                    format!("Cannot read file: {e}"),
+                )],
+            };
 
             if errors.is_empty() {
                 None

@@ -36,6 +36,10 @@ pub fn parse_file_headings(path: &PathBuf) -> io::Result<HashSet<String>> {
 /// assert!(anchors.contains("intro"));
 /// assert!(anchors.contains("intro-1"));
 /// assert!(anchors.contains("hello-world"));
+///
+/// // a heading whose text collides with a generated anchor gets a further suffix
+/// let anchors = collect_heading_links("# a\n# a\n# a-1");
+/// assert!(anchors.contains("a-1-1"));
 /// ```
 #[must_use]
 pub fn collect_heading_links(content: &str) -> HashSet<String> {
@@ -55,15 +59,15 @@ pub fn collect_heading_links(content: &str) -> HashSet<String> {
                 current_heading.push_str(&text);
             }
             Event::End(TagEnd::Heading { .. }) => {
+                // Same as github-slugger: bump the suffix until the anchor is unused,
+                // so "a", "a", "a-1" gives "a", "a-1", "a-1-1"
                 let base_link = heading2link(&current_heading);
-                let link = if let Some(counter) = heading_counter.get_mut(&base_link) {
-                    let numbered_link = format!("{base_link}-{counter}");
+                let mut link = base_link.clone();
+                while headings.contains(&link) {
+                    let counter = heading_counter.entry(base_link.clone()).or_insert(0);
                     *counter += 1;
-                    numbered_link
-                } else {
-                    heading_counter.insert(base_link.clone(), 1);
-                    base_link
-                };
+                    link = format!("{base_link}-{counter}");
+                }
                 headings.insert(link);
                 in_heading = false;
             }

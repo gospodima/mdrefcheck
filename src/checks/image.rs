@@ -1,14 +1,16 @@
 use std::path::Path;
 
+use crate::utils::{is_external, split_dest};
+
 pub fn validate_image(current_path: &Path, dest: &str) -> Result<(), String> {
-    if dest.starts_with("http://") || dest.starts_with("https://") {
+    if is_external(dest) {
         return Ok(());
     }
 
     let resolved = current_path
         .parent()
         .unwrap_or_else(|| Path::new("."))
-        .join(dest);
+        .join(split_dest(dest).0);
 
     if resolved.exists() {
         Ok(())

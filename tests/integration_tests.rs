@@ -99,11 +99,11 @@ fn test_exclude_path_cli() {
 fn test_ignore_regex_skips_validation_cli() {
     let dir = tempfile::tempdir().unwrap();
     let f = dir.path().join("x.md");
-    fs::write(&f, "[skipme](skip:whatever)").unwrap();
+    fs::write(&f, "[skipme](./skipme.md)").unwrap();
 
-    // without ignore, this would error (treated as file path)
+    // without ignore, this would error (file does not exist)
     let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("mdrefcheck");
-    cmd.arg("--ignore").arg("^skip:").arg(dir.path());
+    cmd.arg("--ignore").arg(r"^\./skipme").arg(dir.path());
 
     // --ignore should prevent validation of that link
     cmd.assert().success();
@@ -152,4 +152,73 @@ fn test_repeated_headings_cli() {
     cmd2.assert()
         .failure()
         .stdout(predicate::str::contains("Missing heading"));
+}
+
+fn check_content(content: &str) -> assert_cmd::assert::Assert {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("a b.png"), "data").unwrap();
+    fs::write(dir.path().join("doc.md"), content).unwrap();
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("mdrefcheck");
+    cmd.arg(dir.path());
+    cmd.assert()
+}
+
+#[test]
+fn test_percent_encoded_image_cli() {
+    check_content("![i](./a%20b.png)\n![j](./a%20b.png?raw=true)").success();
+}
+
+#[test]
+fn test_task_list_cli() {
+    check_content("- [x] done\n- [ ] todo").success();
+}
+
+#[test]
+fn test_undefined_reference_cli() {
+    for content in ["[foo]", "[bar][]", "[t][nope]"] {
+        check_content(content)
+            .failure()
+            .stdout(predicate::str::contains("Broken link"));
+    }
+    check_content("[id]\n\n[id]: https://example.com \"Title\"").success();
+}
+
+#[test]
+fn test_reference_targets_checked_cli() {
+    for content in [
+        "[id]\n\n[id]: ./missing.md",
+        "[c][]\n\n[c]: ./missing.md",
+        "[t][r]\n\n[r]: ./missing.md \"Title\"",
+    ] {
+        check_content(content)
+            .failure()
+            .stdout(predicate::str::contains("File not found: ./missing.md"));
+    }
+    check_content(
+        "# Title\n\n[id] [c][] [t][r] <https://example.com>\n\n\
+         [id]: ./doc.md#title\n[c]: ./a%20b.png\n[r]: #title",
+    )
+    .success();
+    check_content("# Title\n\n[id]\n\n[id]: #nope")
+        .failure()
+        .stdout(predicate::str::contains("Missing heading #nope"));
+}
+
+#[test]
+fn test_top_anchor_schemes_and_mailto_query_cli() {
+    check_content(
+        "[t](#)\n[c](tel:+123)\n[u](HTTPS://example.com)\n[m](mailto:a@b.com?subject=hi)",
+    )
+    .success();
+}
+
+#[test]
+fn test_unreadable_markdown_fails_cli() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("bad.md"), [0xff, 0xfe, 0x00]).unwrap();
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("mdrefcheck");
+    cmd.arg(dir.path());
+    cmd.assert()
+        .failure()
+        .stdout(predicate::str::contains("Cannot read file"));
 }

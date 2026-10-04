@@ -1,7 +1,30 @@
-use ignore::{WalkBuilder, overrides::OverrideBuilder, types::TypesBuilder};
+use ignore::{
+    WalkBuilder,
+    overrides::OverrideBuilder,
+    types::{Types, TypesBuilder},
+};
 use log::{debug, error, warn};
 use path_clean::PathClean;
-use std::{collections::HashSet, path::PathBuf};
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
+    sync::LazyLock,
+};
+
+/// File types treated as Markdown (`ignore`'s built-in `markdown` type: md, markdown, mdx, ...)
+static MARKDOWN_TYPES: LazyLock<Types> = LazyLock::new(|| {
+    TypesBuilder::new()
+        .add_defaults()
+        .select("markdown")
+        .build()
+        .expect("built-in markdown type should be valid")
+});
+
+/// True if `path` has a Markdown extension, by the same rule used to gather files
+#[must_use]
+pub fn is_markdown(path: &Path) -> bool {
+    MARKDOWN_TYPES.matched(path, false).is_whitelist()
+}
 
 /// Gathers Markdown files recursively under the given paths.
 #[must_use]
@@ -14,18 +37,6 @@ pub fn gather_markdown_files(
         warn!("No paths provided to scan.");
         return vec![];
     }
-
-    let types = match TypesBuilder::new()
-        .add_defaults()
-        .select("markdown")
-        .build()
-    {
-        Ok(t) => t,
-        Err(e) => {
-            error!("Failed to build markdown filter: {e}");
-            return vec![];
-        }
-    };
 
     let overrides = {
         let mut ob = OverrideBuilder::new(".");
@@ -86,7 +97,7 @@ pub fn gather_markdown_files(
             wb.add(path);
         }
         wb.standard_filters(!no_ignore)
-            .types(types)
+            .types(MARKDOWN_TYPES.clone())
             .overrides(overrides)
             .build()
     };
