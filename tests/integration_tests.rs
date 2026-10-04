@@ -211,3 +211,14 @@ fn test_top_anchor_schemes_and_mailto_query_cli() {
     )
     .success();
 }
+
+#[test]
+fn test_unreadable_markdown_fails_cli() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(dir.path().join("bad.md"), [0xff, 0xfe, 0x00]).unwrap();
+    let mut cmd = assert_cmd::cargo::cargo_bin_cmd!("mdrefcheck");
+    cmd.arg(dir.path());
+    cmd.assert()
+        .failure()
+        .stdout(predicate::str::contains("Cannot read file"));
+}
